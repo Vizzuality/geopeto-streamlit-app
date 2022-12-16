@@ -3,6 +3,7 @@ from typing import List
 import folium
 from folium.plugins import Draw
 
+
 def show_map(center: List[float], zoom: int) -> folium.Map:
     m = folium.Map(
         location=center,
@@ -25,4 +26,5 @@ def show_map(center: List[float], zoom: int) -> folium.Map:
         },
     ).add_to(m)
     return m
+
 

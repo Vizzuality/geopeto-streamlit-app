@@ -6,6 +6,8 @@ from functions import show_map
 MAP_CENTER = [25.0, 55.0]
 MAP_ZOOM = 3
 
+BTN_LABEL_COMPUTE = "Compute Zonal Statistics"
+
 st.set_page_config(
     page_title="mapa",
     page_icon="🌍",
@@ -15,8 +17,8 @@ st.set_page_config(
 
 st.markdown(
     """
-    # &nbsp; 🌍 &nbsp; Map to analyse Soil organic carbon stock from [soils-revealed](https://soilsrevealed.org/)!
-    Follow the instructions in the sidebar on the left to create and download a 3D-printable STL file.
+    # &nbsp; 🌍 &nbsp; Map to analyse SOC stock from [soils-revealed](https://soilsrevealed.org/)!
+    Follow the instructions in the sidebar on the left to analyse a region.
     """,
     unsafe_allow_html=True,
 )
@@ -29,5 +31,29 @@ if output:
         # get latest modified drawing
         geometry = output["last_active_drawing"]
 
-print("New action")
-print(output)
+# Getting Started container
+with st.sidebar.container():
+    st.markdown(
+        f"""
+        # Getting Started
+        1. Click the black square on the map
+        2. Draw a rectangle on the map
+        3. Click on <kbd>{BTN_LABEL_COMPUTE}</kbd>
+        """,
+        unsafe_allow_html=True,
+    )
+    st.button(
+        BTN_LABEL_COMPUTE,
+        key="compute_zs",
+        #on_click=_check_area_and_compute_stl,
+        #kwargs={"folium_output": output, "geo_hash": geo_hash, "progress_bar": progress_bar},
+    )
+    st.markdown(
+        f"""
+        4. Wait for the computation to finish
+        """,
+        unsafe_allow_html=True,
+    )
+print("State")
+print(st.session_state)
+
