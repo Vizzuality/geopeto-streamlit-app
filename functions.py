@@ -2,6 +2,42 @@ from typing import List
 
 import folium
 from folium.plugins import Draw
+import ee
+
+from data import GEEData
+
+ee.Initialize()
+
+
+class TileLayerGEE(folium.TileLayer):
+    """
+    A custom TileLayer class that can display Google Earth Engine tiles.
+
+    Inherits from folium.TileLayer class.
+    """
+    ee_tiles = '{tile_fetcher.url_format}'
+
+    def __init__(self, image: ee.Image, sld_interval: str, name: str, **kwargs):
+        """
+        Constructor for TileLayerGEE class.
+
+        Parameters:
+        image (ee.Image): The Earth Engine image to display.
+        sld_interval (str): SLD style of discrete intervals to apply to the image.
+        name (str): lLayer name.
+        **kwargs: Additional arguments that are passed to the parent constructor.
+        """
+        self.image = image
+        self.sld_interval = sld_interval
+        self.name = name
+        super().__init__(tiles=self.get_tile_url(), **kwargs)
+
+    def get_tile_url(self):
+        self.image = self.image.sldStyle(self.sld_interval)
+        mapid = self.image.getMapId()
+        tiles_url = self.ee_tiles.format(**mapid)
+
+        return tiles_url
 
 
 def show_map(center: List[float], zoom: int) -> folium.Map:
@@ -25,6 +61,26 @@ def show_map(center: List[float], zoom: int) -> folium.Map:
             "rectangle": True,
         },
     ).add_to(m)
+
+    # Add a TileLayer with the provided URL
+    gee_data = GEEData('Current-SOC-stocks-(0-200-cm)')
+
+    tile_layer = TileLayerGEE(
+        image=ee.Image(gee_data.asset_id()),
+        sld_interval=gee_data.sld_interval(),
+        name=gee_data.dataset,
+        attr=gee_data.dataset,
+        overlay=True,
+        control=False,
+        opacity=1
+    )
+
+    tile_layer.add_to(m)
+
+    #control = folium.LayerControl(position='topright')
+    #control.add_to(m)
+
     return m
+
 
 

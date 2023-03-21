@@ -24,6 +24,7 @@ st.markdown(
 )
 st.write("\n")
 m = show_map(center=MAP_CENTER, zoom=MAP_ZOOM)
+
 output = st_folium(m, key="init", width=1300, height=600)
 
 if output:
