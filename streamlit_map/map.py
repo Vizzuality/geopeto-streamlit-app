@@ -1,12 +1,10 @@
 from typing import List
 
+import ee
 import folium
 from folium.plugins import Draw
-import ee
 
-from data import GEEData
-
-ee.Initialize()
+from .data import GEEData
 
 
 class TileLayerGEE(folium.TileLayer):
@@ -63,10 +61,10 @@ def show_map(center: List[float], zoom: int) -> folium.Map:
     ).add_to(m)
 
     # Add a TileLayer with the provided URL
-    gee_data = GEEData('Current-SOC-stocks-(0-200-cm)')
+    gee_data = GEEData('Global-Land-Cover')
 
     tile_layer = TileLayerGEE(
-        image=ee.Image(gee_data.asset_id()),
+        image=gee_data.ee_image(),
         sld_interval=gee_data.sld_interval(),
         name=gee_data.dataset,
         attr=gee_data.dataset,
