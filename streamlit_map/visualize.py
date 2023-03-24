@@ -2,7 +2,9 @@ from typing import List
 
 import ee
 import folium
+import pandas as pd
 from folium.plugins import Draw
+from plotly import express as px
 
 from .data import GEEData
 
@@ -38,7 +40,7 @@ class TileLayerGEE(folium.TileLayer):
         return tiles_url
 
 
-def show_map(center: List[float], zoom: int) -> folium.Map:
+def create_map(center: List[float], zoom: int) -> folium.Map:
     m = folium.Map(
         location=center,
         zoom_start=zoom,
@@ -81,4 +83,30 @@ def show_map(center: List[float], zoom: int) -> folium.Map:
     return m
 
 
+def create_stacked_bar(values, colors):
+    # create a DataFrame with the items of the values dictionary
+    df = pd.DataFrame(list(values.items()), columns=["label", "value"])
+    df['y_axis'] = ' '
 
+    # create a horizontal bar chart for each category
+    fig = px.bar(
+        df,
+        y="y_axis",
+        x='value',
+        color="label",
+        color_discrete_map=colors,
+        hover_data={"y_axis": False, "value": ":,.2f", "label": True}
+    )
+
+    fig.update_layout(
+        title="Summary Metrics",
+        showlegend=False,
+        height=200,
+        width=800
+    )
+
+    # remove x and y axis titles and x-axis tick labels
+    fig.update_xaxes(title=None, showticklabels=False)
+    fig.update_yaxes(title=None)
+
+    return fig
