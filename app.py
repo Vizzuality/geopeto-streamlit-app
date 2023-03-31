@@ -1,7 +1,12 @@
+from typing import List
+
 import ee
 import streamlit as st
 from streamlit_folium import st_folium
+from shapely.geometry import Polygon, box
 
+from streamlit_map.geocoder import Geocoder
+from streamlit_map.geodescriber import GeoDescriber
 from streamlit_map.visualize import create_map, create_stacked_bar
 from streamlit_map.processing import ZonalStatistics
 from streamlit_map.data import GEEData
@@ -13,6 +18,18 @@ MAP_ZOOM = 3
 
 MAX_ALLOWED_AREA_SIZE = 25.0
 BTN_LABEL_COMPUTE = "Compute Zonal Statistics"
+
+
+def _get_bbox(geojson: dict) -> box:
+    # Create a Shapely polygon from the coordinates
+    poly = Polygon(geojson['geometry']['coordinates'][0])
+    # Get the bbox coordinates using the bounds() method
+    min_x, min_y, max_x, max_y = poly.bounds
+    # Create the box object using the box() function
+    shapely_box = box(min_x, min_y, max_x, max_y)
+
+    return shapely_box
+
 
 gee_data = GEEData('Global-Land-Cover')
 zs = ZonalStatistics(gee_data, MAX_ALLOWED_AREA_SIZE)
@@ -32,6 +49,7 @@ if __name__ == "__main__":
         """,
         unsafe_allow_html=True,
     )
+
     st.write("\n")
     m = create_map(center=MAP_CENTER, zoom=MAP_ZOOM)
 
@@ -43,6 +61,7 @@ if __name__ == "__main__":
             if output["last_active_drawing"] is not None:
                 # get latest modified drawing
                 geojson = output["last_active_drawing"]
+
 
     # ensure progress bar resides at top of sidebar and is invisible initially
     progress_bar = st.sidebar.progress(0)
@@ -60,27 +79,69 @@ if __name__ == "__main__":
             unsafe_allow_html=True,
         )
 
-        # Plot!
+        # Create an empty container for the plotly figure
+        text_container = st.empty()
+
         # Create an empty container for the plotly figure
         fig_container = st.empty()
-
-        # Create a session state object to store the state of the button:
-        #state = st.session_state.setdefault('button_selected', False)
 
         # Add the button and its callback
         if st.button(
             BTN_LABEL_COMPUTE,
             key="compute_zs",
             disabled=False if geojson is not None else True,
-            #on_click=lambda: setattr(state, "button_selected", True)
         ):
-
             # Call the zs.check_area_and_compute function to get the plotly figure
             stats = zs.check_area_and_compute(geojson=geojson, progress_bar=progress_bar)
 
+            # convert each item to percentages
+            total_area = sum(stats.values())
+            stats = {key: (item / total_area) * 100 for key, item in stats.items()}
+
+            # add class names
+            stats = {gee_data.class_names()[key]: item for key, item in stats.items()}
+
             # Update the empty container with the plotly figure
-            fig = create_stacked_bar(values=stats, colors=gee_data.class_colors())
+            colors = {gee_data.class_names()[key]: item for key, item in
+                      gee_data.class_colors().items()}
+
+            fig = create_stacked_bar(values=stats, colors=colors)
             fig_container.plotly_chart(fig, use_container_width=True)
+
+            # Update the empty container with the description of the region
+            bbox = _get_bbox(geojson=geojson)
+
+            # create Geocoder object
+            geolocator = Geocoder(user_agent="my-app")
+
+            # reverse geocode center point of box to get region and country
+            center_point = bbox.centroid
+            region, country = geolocator.reverse_geocode(center_point)
+
+            print("Region: ", region)
+            print("Country: ", country)
+
+            # sort the items from top to bottom and take the top 5 elements
+            top_8 = sorted(stats.items(), key=lambda x: x[1], reverse=True)[:8]
+            top_8 = {k: v for k, v in top_8}
+
+            # geodescribe the region with OpenAI API
+            geo_describer = GeoDescriber(model_name="text-davinci-003")
+            description = geo_describer.generate_description(
+                land_cover_per=top_8,
+                region_name=region,
+                ecoregion="Temperate Broadleaf & Mixed Forests",
+                country=country
+            )
+
+            text_container.markdown(
+                f"""
+                **Description of the region:**
+                
+                {description}
+                """,
+                unsafe_allow_html=True,
+            )
 
         st.markdown(
             f"""
@@ -89,12 +150,5 @@ if __name__ == "__main__":
             unsafe_allow_html=True,
         )
 
-
-
-    print("State")
-    print("folium_output: ", output)
-    print("Session: ", st.session_state)
-    if geojson is not None:
-        print("geojson: ", geojson.get('geometry'))
 
 
