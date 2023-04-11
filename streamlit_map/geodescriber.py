@@ -12,14 +12,23 @@ class GeoDescriber:
         self.model_name = model_name
         self.prompt = None
 
-    def generate_description(self, land_cover_per, region_name, country, ecoregion):
-        input_text = f"These region, which is located in {region_name} in the country of {country} and has a {ecoregion} ecoregion, the land cover consists of:"
+    def generate_description(self, land_cover_per, climate_per, region_name, country):
+        input_text = f"I have a region that its centroid has the following address: {region_name}, {country}." \
+                     f"The Köppen climate classification distribution in that region consists of:"
+        for climate, fraction in climate_per.items():
+            input_text += f"\n- {fraction:.1f}% {climate}"
+
+        input_text += f"\n\nAnd the land cover distribution consists of:"
+
         for land_cover, fraction in land_cover_per.items():
             input_text += f"\n- {fraction:.1f}% {land_cover}"
 
-        self.prompt = f"{input_text}\n\nDescribe this region without mentioning the percentage of each land cover type " \
-                      f"and by adding additional socioeconomic information of the region that you may know " \
-                      f"in a paragraph:"
+        #self.prompt = f"{input_text}\n\nDescribe this region without mentioning the percentage of each " \
+        #              f"climate classification and land cover type " \
+        #              f"and by adding additional socioeconomic information of the region that you may know " \
+        #              f"in a paragraph:"
+
+        self.prompt = f"{input_text}\n\nDescribe the climate, landscape, and socioeconomic situation of this region:"
 
         response = openai.Completion.create(
             #engine="davinci",

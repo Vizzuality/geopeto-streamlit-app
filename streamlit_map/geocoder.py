@@ -9,7 +9,7 @@ class Geocoder(Nominatim):
         super().__init__(user_agent=user_agent)
 
     def reverse_geocode(self, center_point):
-        location = self.reverse("{}, {}".format(center_point.y, center_point.x), language='en', zoom=12, namedetails=True)
+        location = self.reverse("{}, {}".format(center_point.y, center_point.x), language='en', zoom=8, namedetails=True)
         location = str(location)
 
         # Remove all occurrences of numbers from the string

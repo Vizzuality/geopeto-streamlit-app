@@ -40,7 +40,19 @@ class ZonalStatistics:
 
             stats = self.compute(geometry, progress_bar)
 
-            return serialize_output(stats)
+            # Sort stats by key value
+            stats = serialize_output(stats)
+
+            # convert each item to percentages
+            total_area = sum(stats.values())
+            stats = {key: (item / total_area) * 100 for key, item in stats.items()}
+
+            # add class names
+            stats = {self.gee_data.class_names()[key]: item for key, item in stats.items()}
+
+            print('Stats: ', stats)
+
+            return stats
 
     def compute(self, geometry: dict, progress_bar: st.progress) -> None:
         region = get_region(geometry)  # Create an EE feature
