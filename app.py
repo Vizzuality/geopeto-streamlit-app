@@ -96,7 +96,7 @@ if __name__ == "__main__":
                 zs = ZonalStatistics(data, MAX_ALLOWED_AREA_SIZE)
 
                 # Call the zs.check_area_and_compute function to get the plotly figure
-                stats = zs.check_area_and_compute(geojson=geojson, progress_bar=progress_bar)
+                stats = zs.check_area_and_compute(geojson=geojson)
 
                 # sort the items from top to bottom and take the top 8 elements
                 top_8 = sorted(stats.items(), key=lambda x: x[1], reverse=True)[:8]

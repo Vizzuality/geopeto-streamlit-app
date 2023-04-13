@@ -21,7 +21,7 @@ class ZonalStatistics:
         self.gee_data = gee_data
         self.max_allowed_area_size = max_allowed_area_size
 
-    def check_area_and_compute(self, geojson: dict, progress_bar: st.progress) -> None:
+    def check_area_and_compute(self, geojson: dict) -> None:
         geometry = geojson['geometry']
         if selected_bbox_too_large(geometry, threshold=self.max_allowed_area_size):
             st.sidebar.warning(
@@ -38,7 +38,7 @@ class ZonalStatistics:
             # it is important to spawn this success message in the sidebar, because state will get lost otherwise
             st.sidebar.success("Successfully computed Zonal Statistics!")
 
-            stats = self.compute(geometry, progress_bar)
+            stats = self.compute(geometry)
 
             # Sort stats by key value
             stats = serialize_output(stats)
@@ -54,7 +54,7 @@ class ZonalStatistics:
 
             return stats
 
-    def compute(self, geometry: dict, progress_bar: st.progress) -> None:
+    def compute(self, geometry: dict) -> None:
         region = get_region(geometry)  # Create an EE feature
         img = self.gee_data.ee_image()
         try:
