@@ -5,7 +5,7 @@ from shapely.geometry import Polygon, box
 
 from streamlit_map.geocoder import Geocoder
 from streamlit_map.geodescriber import GeoDescriber
-from streamlit_map.visualize import create_map, create_stacked_bar
+from streamlit_map.visualize import foliumMapGEE, create_stacked_bar
 from streamlit_map.processing import ZonalStatistics
 from streamlit_map.data import GEEData
 
@@ -50,8 +50,19 @@ if __name__ == "__main__":
     )
 
     st.write("\n")
-    m = create_map(center=MAP_CENTER, zoom=MAP_ZOOM)
-
+    #m = create_map(center=MAP_CENTER, zoom=MAP_ZOOM)
+    
+    m = foliumMapGEE(center=MAP_CENTER, zoom=MAP_ZOOM)
+    
+    for dataset, data in datasets.items():
+        m.add_gee_layer(
+            image=data.ee_image(),
+            sld_interval=data.sld_interval(),
+            name=dataset
+        )
+    
+    m.add_layer_control()
+    
     output = st_folium(m, key="init", width=1300, height=600)
 
     geojson = None
