@@ -108,11 +108,13 @@ class ipyleafletMapGEE(ipyl.Map):
     Inherits from ipyl.Map class.
     """
 
-    def __init__(self,  center: List[float] = [25.0, 55.0], zoom: int = 3, **kwargs):
+    def __init__(self,  geometry=None,  center: List[float] = [25.0, 55.0], zoom: int = 3, **kwargs):
         """
         Constructor for MapGEE class.
 
         Parameters:
+        geometry : GeoJSON
+            GeoJSON with a polygon.
         center: list, default [25.0, 55.0]
             The current center of the map.
         zoom: int, default 3
@@ -121,7 +123,7 @@ class ipyleafletMapGEE(ipyl.Map):
         """
         self.center = center
         self.zoom = zoom
-        self.geometry = None
+        self.geometry = geometry
         super().__init__(basemap=ipyl.basemap_to_tiles(ipyl.basemaps.OpenStreetMap.Mapnik),
                          center=self.center, zoom=self.zoom, **kwargs)
         
@@ -131,34 +133,42 @@ class ipyleafletMapGEE(ipyl.Map):
         control = ipyl.LayersControl(position='topright')
         self.add_control(control)
         
-        # Add DrawControl
-        print('Draw a rectangle on map to select and area.')
+        if self.geometry:
+            self.geometry['features'][0]['properties'] = {'style': {'color': "#2BA4A0", 'opacity': 1, 'fillOpacity': 0}}
+            geo_json = ipyl.GeoJSON(
+                data=self.geometry
+            )
+            self.add_layer(geo_json)
 
-        draw_control = ipyl.DrawControl(position='topleft')
-        draw_control.display_iframe = True
+        else:
+            # Add DrawControl
+            print('Draw a rectangle on map to select and area.')
 
-        draw_control.rectangle = {
-            "shapeOptions": {
-                "color": "#2BA4A0",
-                "fillOpacity": 0,
-                "opacity": 1
+            draw_control = ipyl.DrawControl(position='topleft')
+            draw_control.display_iframe = True
+
+            draw_control.rectangle = {
+                "shapeOptions": {
+                    "color": "#2BA4A0",
+                    "fillOpacity": 0,
+                    "opacity": 1
+                }
             }
-        }
 
-        feature_collection = {
-            'type': 'FeatureCollection',
-            'features': []
-        }
+            feature_collection = {
+                'type': 'FeatureCollection',
+                'features': []
+            }
 
-        def handle_draw(self, action, geo_json):
-            """Do something with the GeoJSON when it's drawn on the map"""    
-            # feature_collection['features'].append(geo_json)
-            feature_collection['features'] = geo_json
+            def handle_draw(self, action, geo_json):
+                """Do something with the GeoJSON when it's drawn on the map"""    
+                # feature_collection['features'].append(geo_json)
+                feature_collection['features'] = geo_json
 
-        draw_control.on_draw(handle_draw)
-        self.add_control(draw_control)
+            draw_control.on_draw(handle_draw)
+            self.add_control(draw_control)
 
-        self.geometry = feature_collection
+            self.geometry = feature_collection
     
     def add_gee_layer(self, image: ee.Image, sld_interval: str, name: str):
         """
