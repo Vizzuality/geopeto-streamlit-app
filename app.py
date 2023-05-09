@@ -3,11 +3,11 @@ import streamlit as st
 from streamlit_folium import st_folium
 from shapely.geometry import Polygon, box
 
-from streamlit_map.geocoder import Geocoder
-from streamlit_map.geodescriber import GeoDescriber
-from streamlit_map.visualize import foliumMapGEE, create_stacked_bar
-from streamlit_map.processing import ZonalStatistics
-from streamlit_map.data import GEEData
+from geopeto.geocoder import Geocoder
+from geopeto.geodescriber import GeoDescriber
+from geopeto.visualize import foliumMapGEE, create_stacked_bar
+from geopeto.processing import ZonalStatistics
+from geopeto.data import GEEData
 
 ee.Initialize()
 
