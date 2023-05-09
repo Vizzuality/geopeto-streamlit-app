@@ -1,6 +1,8 @@
 # Geopeto Streamlit App
 
-This repository contains a Streamlit app where the user can select a region and get land cover and Köppen climate classification data from Google Earth Engine. The app also uses the geopy.geocoders Nominatim geocoder and the OpenAI API for geodescribing the region based on the data provided.
+This repository contains a Streamlit app where the user can select a region and get land cover and Köppen climate classification data from Google Earth Engine. The app also uses the Nominatim geocoder for OpenStreetMap data and the OpenAI API for geodescribing the region based on the data provided.
+
+![](images/demo.gif)
 
 ## Installation
 

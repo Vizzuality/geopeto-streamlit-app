@@ -50,16 +50,14 @@ if __name__ == "__main__":
     )
 
     st.write("\n")
-    #m = create_map(center=MAP_CENTER, zoom=MAP_ZOOM)
     
     m = foliumMapGEE(center=MAP_CENTER, zoom=MAP_ZOOM)
     
-    for dataset, data in datasets.items():
-        m.add_gee_layer(
-            image=data.ee_image(),
-            sld_interval=data.sld_interval(),
-            name=dataset
-        )
+    m.add_gee_layer(
+        image=datasets['Global-Land-Cover'].ee_image(),
+        sld_interval=datasets['Global-Land-Cover'].sld_interval(),
+        name='Global-Land-Cover'
+    )
     
     m.add_layer_control()
     
